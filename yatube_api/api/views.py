@@ -37,6 +37,10 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
 
+def get_post(self):
+    return get_object_or_404(Post, pk=self.kwargs.get('post_id'))
+
+
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
 
@@ -46,12 +50,10 @@ class CommentViewSet(viewsets.ModelViewSet):
     )
 
     def get_queryset(self):
-        post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
-        return post.comments.all()
+        return get_post(self).comments.all()
 
     def perform_create(self, serializer):
-        post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
-        serializer.save(author=self.request.user, post=post)
+        serializer.save(author=self.request.user, post=get_post(self))
 
 
 class FollowViewSet(viewsets.ModelViewSet):
@@ -65,7 +67,7 @@ class FollowViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = get_object_or_404(User, username=self.request.user.username)
-        return user.follower
+        return user.follower.all()
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
